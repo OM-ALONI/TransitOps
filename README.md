@@ -204,10 +204,10 @@ transitops/
 
 | Name | Role | Worked On |
 |------|------|-----------|
-| [Mohit W] | Backend Lead | DB schema, auth, config, seed data, README |
-| [Om Aloni] | Module Dev | Vehicles, drivers, dashboard, utility functions |
-| [Aryan Sevak] | Workflow Dev | Trips, maintenance, fuel, expenses, reports |
-| [Suraj Dubey] | Frontend Dev | Templates, CSS, JS, dark mode, landing page |
+| Mohit W | Backend Lead | DB schema, auth, config, seed data, README |
+| Om Aloni | Module Dev | Vehicles, drivers, dashboard, utility functions |
+| Aryan Sevak | Workflow Dev | Trips, maintenance, fuel, expenses, reports |
+| Suraj Dubey | Frontend Dev | Templates, CSS, JS, dark mode, landing page |
 
 ---
 
