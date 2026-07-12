@@ -2,7 +2,7 @@
 
 A centralized fleet management system built for a hackathon, July 2026.  
 Handles the full lifecycle of transport operations — vehicles, drivers,
-trips, maintenance, fuel, expenses, and analytics. All Indian.
+trips, maintenance, fuel, expenses, and analytics. 
 
 ---
 
