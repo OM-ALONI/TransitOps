@@ -2,7 +2,7 @@
 
 A centralized fleet management system built for a hackathon, July 2026.  
 Handles the full lifecycle of transport operations — vehicles, drivers,
-trips, maintenance, fuel, expenses, and analytics. All Indian.
+trips, maintenance, fuel, expenses, and analytics. 
 
 ---
 
@@ -204,10 +204,10 @@ transitops/
 
 | Name | Role | Worked On |
 |------|------|-----------|
-| [Your Name] | Backend Lead | DB schema, auth, config, seed data, README |
-| [Name 2] | Module Dev | Vehicles, drivers, dashboard, utility functions |
-| [Name 3] | Workflow Dev | Trips, maintenance, fuel, expenses, reports |
-| [Name 4] | Frontend Dev | Templates, CSS, JS, dark mode, landing page |
+| Mohit W | Backend Lead | DB schema, auth, config, seed data, README |
+| Om Aloni | Module Dev | Vehicles, drivers, dashboard, utility functions |
+| Aryan Sevak | Workflow Dev | Trips, maintenance, fuel, expenses, reports |
+| Suraj Dubey | Frontend Dev | Templates, CSS, JS, dark mode, landing page |
 
 ---
 
