@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}Create Trip — TransitOps{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('trips.list_trips') }}">Trips</a></li>
+<li class="breadcrumb-item active">Create</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-plus-circle text-primary"></i> Create New Trip</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="vehicle_id" class="form-label">
+                                Vehicle <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="vehicle_id" name="vehicle_id" required>
+                                <option value="">Select available vehicle...</option>
+                                {% for v in vehicles %}
+                                <option value="{{ v.id }}" data-max-load="{{ v.max_load_kg }}">
+                                    {{ v.reg_number }} — {{ v.model_name }}
+                                    ({{ "%.0f"|format(v.max_load_kg) }} kg max)
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small id="vehicleInfo" class="text-muted d-none mt-1">
+                                <i class="bi bi-info-circle"></i> Max load: <strong id="maxLoadDisplay">—</strong> kg
+                            </small>
+                            {% if not vehicles %}
+                            <small class="text-warning">No vehicles available for dispatch.</small>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="driver_id" class="form-label">
+                                Driver <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="driver_id" name="driver_id" required>
+                                <option value="">Select available driver...</option>
+                                {% for d in drivers %}
+                                <option value="{{ d.id }}">
+                                    {{ d.name }} — {{ d.license_number }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if not drivers %}
+                            <small class="text-warning">No drivers available for dispatch.</small>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="source" class="form-label">Source <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="source" name="source"
+                                   placeholder="e.g. Mumbai Warehouse" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="destination" class="form-label">Destination <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="destination" name="destination"
+                                   placeholder="e.g. Pune IT Park" required>
+                        </div>
+                            <div class="col-md-4">
+                                <label for="cargo_weight_kg" class="form-label">
+                                    Cargo Weight (kg) <span class="text-danger">*</span>
+                                    <span class="ms-1 text-muted" data-bs-toggle="tooltip" data-bs-placement="right"
+                                          title="Must be less than the selected vehicle's max load capacity. Green bar = safe, yellow = getting close, red = over limit.">
+                                        <i class="bi bi-question-circle-fill small"></i>
+                                    </span>
+                                </label>
+                                <input type="number" class="form-control" id="cargo_weight_kg" name="cargo_weight_kg"
+                                       placeholder="e.g. 450" step="0.1" min="0.1" required>
+                                <div class="mt-1">
+                                    <div class="progress d-none" id="cargoProgress" style="height:4px;">
+                                        <div class="progress-bar" id="cargoBar" style="width:0%"></div>
+                                    </div>
+                                    <small id="cargoInfo" class="text-muted d-none mt-1"></small>
+                                    <small id="cargoValidation" class="text-danger d-none">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> Exceeds max load capacity.
+                                    </small>
+                                </div>
+                            </div>
+                        <div class="col-md-4">
+                            <label for="planned_distance_km" class="form-label">Planned Distance (km) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="planned_distance_km"
+                                   name="planned_distance_km" placeholder="e.g. 75" step="0.1" min="0.1" required>
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Create Trip (Draft)
+                        </button>
+                        <a href="{{ url_for('trips.list_trips') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// init bootstrap tooltips (for the cargo weight ? icon)
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(el) { return new bootstrap.Tooltip(el); });
+});
+
+(function() {
+    var vehicleSelect = document.getElementById('vehicle_id');
+    var vehicleInfo = document.getElementById('vehicleInfo');
+    var maxLoadDisplay = document.getElementById('maxLoadDisplay');
+    var cargoInput = document.getElementById('cargo_weight_kg');
+    var cargoValidation = document.getElementById('cargoValidation');
+    var cargoProgress = document.getElementById('cargoProgress');
+    var cargoBar = document.getElementById('cargoBar');
+    var cargoInfo = document.getElementById('cargoInfo');
+    var maxLoad = 0;
+
+    vehicleSelect.addEventListener('change', function() {
+        var selected = this.options[this.selectedIndex];
+        maxLoad = parseFloat(selected.dataset.maxLoad) || 0;
+        if (maxLoad > 0) {
+            vehicleInfo.classList.remove('d-none');
+            maxLoadDisplay.textContent = maxLoad.toLocaleString();
+        } else {
+            vehicleInfo.classList.add('d-none');
+            cargoProgress.classList.add('d-none');
+            cargoInfo.classList.add('d-none');
+        }
+        updateCargo();
+    });
+
+    cargoInput.addEventListener('input', updateCargo);
+
+    function updateCargo() {
+        var cargo = parseFloat(cargoInput.value) || 0;
+        if (maxLoad <= 0 || cargo <= 0) {
+            cargoProgress.classList.add('d-none');
+            cargoInfo.classList.add('d-none');
+            cargoValidation.classList.add('d-none');
+            return;
+        }
+        cargoProgress.classList.remove('d-none');
+        cargoInfo.classList.remove('d-none');
+        var pct = Math.min((cargo / maxLoad) * 100, 100);
+        cargoBar.style.width = pct + '%';
+        cargoBar.className = 'progress-bar ' + (pct <= 60 ? 'bg-success' : pct <= 85 ? 'bg-warning' : 'bg-danger');
+        cargoInfo.textContent = cargo.toLocaleString() + ' / ' + maxLoad.toLocaleString() + ' kg (' + Math.round(pct) + '%)';
+        if (cargo > maxLoad) {
+            cargoValidation.classList.remove('d-none');
+            cargoInfo.classList.add('text-danger');
+        } else {
+            cargoValidation.classList.add('d-none');
+            cargoInfo.classList.remove('text-danger');
+        }
+    }
+})();
+</script>
+{% endblock %}

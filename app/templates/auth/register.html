@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Register — TransitOps{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <a href="{{ url_for('auth.landing') }}" class="auth-back">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div class="auth-icon-wrapper">
+                <div class="auth-icon">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+            </div>
+            <h2>Create Account</h2>
+            <p>Join TransitOps and start managing your fleet</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form" id="registerForm">
+            <div class="mb-3">
+                <label for="full_name" class="form-label fw-semibold small text-uppercase">Full Name</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input type="text" class="form-control" id="full_name" name="full_name"
+                           placeholder="John Doe" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label fw-semibold small text-uppercase">Email Address</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                    <input type="email" class="form-control" id="email" name="email"
+                           placeholder="you@company.com" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="role" class="form-label fw-semibold small text-uppercase">Role</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-briefcase"></i></span>
+                    <select class="form-select" id="role" name="role" required>
+                        <option value="fleet_manager">Fleet Manager</option>
+                        <option value="driver">Driver</option>
+                        <option value="safety_officer">Safety Officer</option>
+                        <option value="financial_analyst">Financial Analyst</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label fw-semibold small text-uppercase">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input type="password" class="form-control" id="password" name="password"
+                           placeholder="At least 6 characters" required minlength="6">
+                    <button class="btn btn-outline-secondary" type="button" id="togglePassword1" tabindex="-1">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+                <div class="invalid-feedback">Minimum 6 characters required.</div>
+            </div>
+            <div class="mb-4">
+                <label for="confirm_password" class="form-label fw-semibold small text-uppercase">Confirm Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                    <input type="password" class="form-control" id="confirm_password"
+                           name="confirm_password" placeholder="Re-enter password" required>
+                    <button class="btn btn-outline-secondary" type="button" id="togglePassword2" tabindex="-1">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+                <div class="invalid-feedback">Passwords must match.</div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 py-2-5 fw-semibold" id="registerBtn">
+                <span class="btn-text">Create Account</span>
+                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p class="mb-0">
+                Already have an account?
+                <a href="{{ url_for('auth.login') }}" class="fw-semibold">Sign In</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    var form = document.getElementById('registerForm');
+    var btn = document.getElementById('registerBtn');
+    var pw = document.getElementById('password');
+    var cp = document.getElementById('confirm_password');
+
+    // live password match check — shows feedback as you type
+    cp.addEventListener('input', function() {
+        this.setCustomValidity('');
+        if (pw.value && cp.value && pw.value !== cp.value) {
+            this.setCustomValidity('Passwords do not match');
+        }
+    });
+    pw.addEventListener('input', function() {
+        cp.dispatchEvent(new Event('input'));
+    });
+
+    form.addEventListener('submit', function(e) {
+        // reset any stale custom validity
+        cp.setCustomValidity('');
+
+        // check password match FIRST before anything else
+        if (pw.value !== cp.value) {
+            e.preventDefault();
+            cp.setCustomValidity('Passwords do not match');
+        }
+
+        // let html5 validation run
+        if (!form.checkValidity()) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        form.classList.add('was-validated');
+
+        // if form is valid, show loading
+        if (form.checkValidity()) {
+            btn.querySelector('.btn-text').classList.add('d-none');
+            btn.querySelector('.spinner-border').classList.remove('d-none');
+            btn.disabled = true;
+        }
+    });
+
+    function setupToggle(btnId, inputId) {
+        document.getElementById(btnId).addEventListener('click', function() {
+            var el = document.getElementById(inputId);
+            var icon = this.querySelector('i');
+            if (el.type === 'password') { el.type = 'text'; icon.className = 'bi bi-eye-slash'; }
+            else { el.type = 'password'; icon.className = 'bi bi-eye'; }
+        });
+    }
+    setupToggle('togglePassword1', 'password');
+    setupToggle('togglePassword2', 'confirm_password');
+})();
+</script>
+{% endblock %}

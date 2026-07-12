@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Fuel & Expenses — TransitOps{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Fuel & Expenses</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="fw-bold mb-0"><i class="bi bi-fuel-pump text-primary"></i> Fuel & Expenses</h2>
+    <a href="{{ url_for('fuel.create_expense') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Record Expense
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold">Type</label>
+                <select name="type" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    <option value="Fuel" {{ 'selected' if request.args.get('type') == 'Fuel' }}>Fuel</option>
+                    <option value="Toll" {{ 'selected' if request.args.get('type') == 'Toll' }}>Toll</option>
+                    <option value="Maintenance" {{ 'selected' if request.args.get('type') == 'Maintenance' }}>Maintenance</option>
+                    <option value="Other" {{ 'selected' if request.args.get('type') == 'Other' }}>Other</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold">Vehicle</label>
+                <select name="vehicle_id" class="form-select form-select-sm">
+                    <option value="">All Vehicles</option>
+                    {% for v in vehicles %}
+                    <option value="{{ v.id }}" {{ 'selected' if request.args.get('vehicle_id')|string == v.id|string }}>
+                        {{ v.reg_number }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="{{ url_for('fuel.list_expenses') }}" class="btn btn-sm btn-outline-secondary w-100">
+                    <i class="bi bi-x-circle"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th><a href="{{ url_for('fuel.list_expenses') }}?{{ sort_url('date', sort_col, sort_order) }}" class="text-decoration-none text-reset">Date <i class="{{ sort_icon('date', sort_col, sort_order) }} small"></i></a></th>
+                    <th>Vehicle</th>
+                    <th><a href="{{ url_for('fuel.list_expenses') }}?{{ sort_url('expense_type', sort_col, sort_order) }}" class="text-decoration-none text-reset">Type <i class="{{ sort_icon('expense_type', sort_col, sort_order) }} small"></i></a></th>
+                    <th><a href="{{ url_for('fuel.list_expenses') }}?{{ sort_url('liters', sort_col, sort_order) }}" class="text-decoration-none text-reset">Liters <i class="{{ sort_icon('liters', sort_col, sort_order) }} small"></i></a></th>
+                    <th><a href="{{ url_for('fuel.list_expenses') }}?{{ sort_url('cost', sort_col, sort_order) }}" class="text-decoration-none text-reset">Cost <i class="{{ sort_icon('cost', sort_col, sort_order) }} small"></i></a></th>
+                    <th>Trip</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in expenses %}
+                <tr>
+                    <td>{{ e.date.strftime('%d %b %Y') }}</td>
+                    <td>{{ e.vehicle.reg_number }}</td>
+                    <td>
+                        {% if e.expense_type == 'Fuel' %}
+                        <span class="badge bg-warning-subtle text-warning"><i class="bi bi-fuel-pump"></i> Fuel</span>
+                        {% elif e.expense_type == 'Toll' %}
+                        <span class="badge bg-info-subtle text-info"><i class="bi bi-credit-card"></i> Toll</span>
+                        {% elif e.expense_type == 'Maintenance' %}
+                        <span class="badge bg-danger-subtle text-danger"><i class="bi bi-wrench"></i> Maintenance</span>
+                        {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary">Other</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ "%.1f"|format(e.liters) if e.liters else '—' }}</td>
+                    <td><strong>₹{{ "%.2f"|format(e.cost) }}</strong></td>
+                    <td>
+                        {% if e.trip %}
+                        <a href="{{ url_for('trips.view_trip', trip_id=e.trip.id) }}" class="small">
+                            #{{ e.trip.id }}
+                        </a>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td><small>{{ e.notes or '—' }}</small></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="bi bi-fuel-pump display-4 d-block mb-2 opacity-25"></i>
+                        No expenses logged yet. <a href="{{ url_for('fuel.create_expense') }}">Record your first one</a>.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

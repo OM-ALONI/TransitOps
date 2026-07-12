@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Edit Driver — TransitOps{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('drivers.list_drivers') }}">Drivers</a></li>
+<li class="breadcrumb-item active">Edit</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-pencil-square text-primary"></i> Edit {{ driver.name }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">License Number</label>
+                            <input type="text" class="form-control bg-light" value="{{ driver.license_number }}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name"
+                                   value="{{ driver.name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="license_category" class="form-label">License Category</label>
+                            <select class="form-select" id="license_category" name="license_category">
+                                <option value="A" {{ 'selected' if driver.license_category == 'A' }}>A</option>
+                                <option value="B" {{ 'selected' if driver.license_category == 'B' }}>B</option>
+                                <option value="C" {{ 'selected' if driver.license_category == 'C' }}>C</option>
+                                <option value="CE" {{ 'selected' if driver.license_category == 'CE' }}>CE</option>
+                                <option value="D" {{ 'selected' if driver.license_category == 'D' }}>D</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="license_expiry" class="form-label">License Expiry</label>
+                            <input type="date" class="form-control" id="license_expiry" name="license_expiry"
+                                   value="{{ driver.license_expiry.isoformat() }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="contact" class="form-label">Contact</label>
+                            <input type="text" class="form-control" id="contact" name="contact"
+                                   value="{{ driver.contact }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="safety_score" class="form-label">Safety Score</label>
+                            <input type="number" class="form-control" id="safety_score" name="safety_score"
+                                   value="{{ driver.safety_score }}" min="0" max="100">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="Available" {{ 'selected' if driver.status == 'Available' }}>Available</option>
+                                <option value="On Trip" {{ 'selected' if driver.status == 'On Trip' }}>On Trip</option>
+                                <option value="Off Duty" {{ 'selected' if driver.status == 'Off Duty' }}>Off Duty</option>
+                                <option value="Suspended" {{ 'selected' if driver.status == 'Suspended' }}>Suspended</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Save Changes
+                        </button>
+                        <a href="{{ url_for('drivers.list_drivers') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Trips — TransitOps{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Trips</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="fw-bold mb-0"><i class="bi bi-map text-primary"></i> Trip Management</h2>
+    <a href="{{ url_for('trips.create_trip') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Create Trip
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Filter by Status</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">All Trips</option>
+                    <option value="Draft" {{ 'selected' if request.args.get('status') == 'Draft' }}>Draft</option>
+                    <option value="Dispatched" {{ 'selected' if request.args.get('status') == 'Dispatched' }}>Dispatched</option>
+                    <option value="Completed" {{ 'selected' if request.args.get('status') == 'Completed' }}>Completed</option>
+                    <option value="Cancelled" {{ 'selected' if request.args.get('status') == 'Cancelled' }}>Cancelled</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="{{ url_for('trips.list_trips') }}" class="btn btn-sm btn-outline-secondary w-100">
+                    <i class="bi bi-x-circle"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th><a href="{{ url_for('trips.list_trips') }}?{{ sort_url('id', sort_col, sort_order) }}" class="text-decoration-none text-reset"># <i class="{{ sort_icon('id', sort_col, sort_order) }} small"></i></a></th>
+                    <th>Vehicle</th>
+                    <th>Driver</th>
+                    <th><a href="{{ url_for('trips.list_trips') }}?{{ sort_url('source', sort_col, sort_order) }}" class="text-decoration-none text-reset">Route <i class="{{ sort_icon('source', sort_col, sort_order) }} small"></i></a></th>
+                    <th><a href="{{ url_for('trips.list_trips') }}?{{ sort_url('cargo_weight_kg', sort_col, sort_order) }}" class="text-decoration-none text-reset">Cargo (kg) <i class="{{ sort_icon('cargo_weight_kg', sort_col, sort_order) }} small"></i></a></th>
+                    <th><a href="{{ url_for('trips.list_trips') }}?{{ sort_url('planned_distance_km', sort_col, sort_order) }}" class="text-decoration-none text-reset">Distance (km) <i class="{{ sort_icon('planned_distance_km', sort_col, sort_order) }} small"></i></a></th>
+                    <th><a href="{{ url_for('trips.list_trips') }}?{{ sort_url('status', sort_col, sort_order) }}" class="text-decoration-none text-reset">Status <i class="{{ sort_icon('status', sort_col, sort_order) }} small"></i></a></th>
+                    <th><a href="{{ url_for('trips.list_trips') }}?{{ sort_url('created_at', sort_col, sort_order) }}" class="text-decoration-none text-reset">Created <i class="{{ sort_icon('created_at', sort_col, sort_order) }} small"></i></a></th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in trips %}
+                <tr>
+                    <td><strong>#{{ t.id }}</strong></td>
+                    <td>{{ t.vehicle.reg_number }}</td>
+                    <td>{{ t.driver.name }}</td>
+                    <td>
+                        <small>{{ t.source }}</small>
+                        <i class="bi bi-arrow-right mx-1 text-muted"></i>
+                        <small>{{ t.destination }}</small>
+                    </td>
+                    <td>{{ "%.0f"|format(t.cargo_weight_kg) }}</td>
+                    <td>
+                        {% if t.actual_distance_km %}
+                        {{ "%.1f"|format(t.actual_distance_km) }}
+                        {% else %}
+                        {{ "%.1f"|format(t.planned_distance_km) }} <span class="text-muted">(planned)</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                            {% if t.status == 'Draft' %}
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle"><i class="bi bi-file-text"></i> Draft</span>
+                        {% elif t.status == 'Dispatched' %}
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle"><i class="bi bi-send-fill"></i> Dispatched</span>
+                        {% elif t.status == 'Completed' %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle-fill"></i> Completed</span>
+                        {% else %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-x-circle-fill"></i> Cancelled</span>
+                        {% endif %}
+                    </td>
+                    <td><small>{{ t.created_at.strftime('%d %b %H:%M') }}</small></td>
+                    <td class="text-end">
+                        <a href="{{ url_for('trips.view_trip', trip_id=t.id) }}"
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">
+                        <i class="bi bi-map display-4 d-block mb-2 opacity-25"></i>
+                        Nothing here yet. Got a delivery to send? <a href="{{ url_for('trips.create_trip') }}">Create a trip</a>.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

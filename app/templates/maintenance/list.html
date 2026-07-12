@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Maintenance — TransitOps{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Maintenance</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="fw-bold mb-0"><i class="bi bi-wrench text-primary"></i> Maintenance Logs</h2>
+    <a href="{{ url_for('maintenance.create_maintenance') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> New Maintenance
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Filter</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">All Records</option>
+                    <option value="active" {{ 'selected' if request.args.get('status') == 'active' }}>Active</option>
+                    <option value="closed" {{ 'selected' if request.args.get('status') == 'closed' }}>Closed</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="{{ url_for('maintenance.list_maintenance') }}" class="btn btn-sm btn-outline-secondary w-100">
+                    <i class="bi bi-x-circle"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th><a href="{{ url_for('maintenance.list_maintenance') }}?{{ sort_url('id', sort_col, sort_order) }}" class="text-decoration-none text-reset"># <i class="{{ sort_icon('id', sort_col, sort_order) }} small"></i></a></th>
+                    <th>Vehicle</th>
+                    <th>Description</th>
+                    <th><a href="{{ url_for('maintenance.list_maintenance') }}?{{ sort_url('cost', sort_col, sort_order) }}" class="text-decoration-none text-reset">Cost <i class="{{ sort_icon('cost', sort_col, sort_order) }} small"></i></a></th>
+                    <th><a href="{{ url_for('maintenance.list_maintenance') }}?{{ sort_url('start_date', sort_col, sort_order) }}" class="text-decoration-none text-reset">Start Date <i class="{{ sort_icon('start_date', sort_col, sort_order) }} small"></i></a></th>
+                    <th>End Date</th>
+                    <th><a href="{{ url_for('maintenance.list_maintenance') }}?{{ sort_url('is_active', sort_col, sort_order) }}" class="text-decoration-none text-reset">Status <i class="{{ sort_icon('is_active', sort_col, sort_order) }} small"></i></a></th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td><strong>#{{ log.id }}</strong></td>
+                    <td>{{ log.vehicle.reg_number }}</td>
+                    <td>{{ log.description }}</td>
+                    <td>₹{{ "%.2f"|format(log.cost) }}</td>
+                    <td><small>{{ log.start_date.strftime('%d %b %Y, %H:%M') }}</small></td>
+                    <td>
+                        {% if log.end_date %}
+                        <small>{{ log.end_date.strftime('%d %b %Y, %H:%M') }}</small>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                            {% if log.is_active %}
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="bi bi-hourglass-split"></i> Active</span>
+                        {% else %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle"></i> Closed</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if log.is_active %}
+                        <form method="POST" action="{{ url_for('maintenance.close_maintenance', log_id=log.id) }}"
+                              class="d-inline" onsubmit="return confirm('Close this maintenance? Vehicle will be marked Available.')">
+                            <button class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-check-circle"></i> Close
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        <i class="bi bi-wrench display-4 d-block mb-2 opacity-25"></i>
+                        All vehicles running fine. <a href="{{ url_for('maintenance.create_maintenance') }}">Log a repair?</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

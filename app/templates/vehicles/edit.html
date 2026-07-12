@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Edit Vehicle — TransitOps{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('vehicles.list_vehicles') }}">Vehicles</a></li>
+<li class="breadcrumb-item active">Edit</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-pencil-square text-primary"></i>
+                    Edit {{ vehicle.reg_number }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Registration Number</label>
+                            <input type="text" class="form-control bg-light" value="{{ vehicle.reg_number }}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="model_name" class="form-label">Model Name</label>
+                            <input type="text" class="form-control" id="model_name" name="model_name"
+                                   value="{{ vehicle.model_name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="vehicle_type" class="form-label">Vehicle Type</label>
+                            <select class="form-select" id="vehicle_type" name="vehicle_type">
+                                <option value="Truck" {{ 'selected' if vehicle.vehicle_type == 'Truck' }}>Truck</option>
+                                <option value="Van" {{ 'selected' if vehicle.vehicle_type == 'Van' }}>Van</option>
+                                <option value="Pickup" {{ 'selected' if vehicle.vehicle_type == 'Pickup' }}>Pickup</option>
+                                <option value="Trailer" {{ 'selected' if vehicle.vehicle_type == 'Trailer' }}>Trailer</option>
+                                <option value="Bus" {{ 'selected' if vehicle.vehicle_type == 'Bus' }}>Bus</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="max_load_kg" class="form-label">Max Load (kg)</label>
+                            <input type="number" class="form-control" id="max_load_kg" name="max_load_kg"
+                                   value="{{ vehicle.max_load_kg }}" step="0.1" min="0.1">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="odometer" class="form-label">Odometer (km)</label>
+                            <input type="number" class="form-control" id="odometer" name="odometer"
+                                   value="{{ vehicle.odometer }}" step="0.1">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="acquisition_cost" class="form-label">Acq. Cost (₹)</label>
+                            <input type="number" class="form-control" id="acquisition_cost" name="acquisition_cost"
+                                   value="{{ vehicle.acquisition_cost }}" step="0.01">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="Available" {{ 'selected' if vehicle.status == 'Available' }}>Available</option>
+                                <option value="On Trip" {{ 'selected' if vehicle.status == 'On Trip' }}>On Trip</option>
+                                <option value="In Shop" {{ 'selected' if vehicle.status == 'In Shop' }}>In Shop</option>
+                                <option value="Retired" {{ 'selected' if vehicle.status == 'Retired' }}>Retired</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Save Changes
+                        </button>
+                        <a href="{{ url_for('vehicles.list_vehicles') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

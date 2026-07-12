@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Register Driver — TransitOps{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('drivers.list_drivers') }}">Drivers</a></li>
+<li class="breadcrumb-item active">Register</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-person-plus-fill text-primary"></i> Register New Driver</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name"
+                                   placeholder="e.g. Alex Johnson" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="license_number" class="form-label">License Number <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="license_number" name="license_number"
+                                   placeholder="e.g. DL-2024-7890" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="license_category" class="form-label">License Category <span class="text-danger">*</span></label>
+                            <select class="form-select" id="license_category" name="license_category" required>
+                                <option value="">Select category...</option>
+                                <option value="A">A (Motorcycle)</option>
+                                <option value="B">B (Car)</option>
+                                <option value="C">C (Light Truck)</option>
+                                <option value="CE">CE (Heavy Truck)</option>
+                                <option value="D">D (Bus)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="license_expiry" class="form-label">License Expiry <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="license_expiry" name="license_expiry" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="contact" class="form-label">Contact <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="contact" name="contact"
+                                   placeholder="+1 555-0123" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="safety_score" class="form-label">Safety Score</label>
+                            <input type="number" class="form-control" id="safety_score" name="safety_score"
+                                   value="100" min="0" max="100">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="status" class="form-label">Initial Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="Available">Available</option>
+                                <option value="Off Duty">Off Duty</option>
+                                <option value="Suspended">Suspended</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Register Driver
+                        </button>
+                        <a href="{{ url_for('drivers.list_drivers') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

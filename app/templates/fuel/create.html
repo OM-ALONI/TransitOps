@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Record Expense — TransitOps{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('fuel.list_expenses') }}">Fuel & Expenses</a></li>
+<li class="breadcrumb-item active">Record</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-cash-stack text-primary"></i> Record Fuel / Expense</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="vehicle_id" class="form-label">Vehicle <span class="text-danger">*</span></label>
+                            <select class="form-select" id="vehicle_id" name="vehicle_id" required>
+                                <option value="">Select vehicle...</option>
+                                {% for v in vehicles %}
+                                <option value="{{ v.id }}">{{ v.reg_number }} — {{ v.model_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="expense_type" class="form-label">Expense Type <span class="text-danger">*</span></label>
+                            <select class="form-select" id="expense_type" name="expense_type" required>
+                                <option value="Fuel">Fuel</option>
+                                <option value="Toll">Toll</option>
+                                <option value="Maintenance">Maintenance</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6" id="litersGroup">
+                            <label for="liters" class="form-label">Liters</label>
+                            <input type="number" class="form-control" id="liters" name="liters"
+                                   step="0.1" min="0" placeholder="Leave empty if not fuel">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cost" class="form-label">Cost (₹) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="cost" name="cost"
+                                   step="0.01" min="0" required placeholder="0.00">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="date" class="form-label">Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="date" name="date"
+                                   value="{{ today.isoformat() if today else '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="trip_id" class="form-label">Related Trip</label>
+                            <select class="form-select" id="trip_id" name="trip_id">
+                                <option value="">None</option>
+                                {% for t in trips %}
+                                <option value="{{ t.id }}">
+                                    #{{ t.id }}: {{ t.source }} → {{ t.destination }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="2"
+                                      placeholder="Optional details..."></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Record Expense
+                        </button>
+                        <a href="{{ url_for('fuel.list_expenses') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('expense_type').addEventListener('change', function() {
+    const litersGroup = document.getElementById('litersGroup');
+    if (this.value === 'Fuel') {
+        litersGroup.style.display = '';
+    } else {
+        litersGroup.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

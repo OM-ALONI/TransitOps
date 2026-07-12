@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% block title %}Trip #{{ trip.id }} — TransitOps{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('trips.list_trips') }}">Trips</a></li>
+<li class="breadcrumb-item active">Trip #{{ trip.id }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">Trip #{{ trip.id }} — {{ trip.source }} → {{ trip.destination }}</h5>
+                <span>
+                    {% if trip.status == 'Draft' %}
+                    <span class="badge bg-secondary fs-6"><i class="bi bi-file-text"></i> Draft</span>
+                    {% elif trip.status == 'Dispatched' %}
+                    <span class="badge bg-primary fs-6"><i class="bi bi-send-fill"></i> In Progress</span>
+                    {% elif trip.status == 'Completed' %}
+                    <span class="badge bg-success fs-6"><i class="bi bi-check-circle-fill"></i> Completed</span>
+                    {% else %}
+                    <span class="badge bg-danger fs-6"><i class="bi bi-x-circle-fill"></i> Cancelled</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded detail-box">
+                            <div class="text-muted small text-uppercase mb-2">Vehicle</div>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="vehicle-icon"><i class="bi bi-truck"></i></div>
+                                <div>
+                                    <strong class="d-block">{{ trip.vehicle.reg_number }}</strong>
+                                    <small class="text-muted">{{ trip.vehicle.model_name }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded detail-box">
+                            <div class="text-muted small text-uppercase mb-2">Driver</div>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="driver-icon"><i class="bi bi-person-badge"></i></div>
+                                <div>
+                                    <strong class="d-block">{{ trip.driver.name }}</strong>
+                                    <small class="text-muted">{{ trip.driver.license_number }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-sm-3">
+                        <div class="text-muted small text-uppercase">Source</div>
+                        <strong><i class="bi bi-geo-alt-fill text-danger"></i> {{ trip.source }}</strong>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="text-muted small text-uppercase">Destination</div>
+                        <strong><i class="bi bi-geo-alt-fill text-primary"></i> {{ trip.destination }}</strong>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="text-muted small text-uppercase">Distance</div>
+                        <strong>{{ "%.1f"|format(trip.planned_distance_km) }} km</strong>
+                        {% if trip.actual_distance_km %}
+                        <small class="text-muted d-block">Actual: {{ "%.1f"|format(trip.actual_distance_km) }} km</small>
+                        {% endif %}
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="text-muted small text-uppercase">Cargo</div>
+                        <strong>{{ "%.0f"|format(trip.cargo_weight_kg) }} kg</strong>
+                        <div class="progress mt-1" style="height:4px;">
+                            {% set pct = (trip.cargo_weight_kg / trip.vehicle.max_load_kg * 100) | round %}
+                            <div class="progress-bar {{ 'bg-success' if pct <= 60 else 'bg-warning' if pct <= 85 else 'bg-danger' }}"
+                                 style="width:{{ pct }}%"></div>
+                        </div>
+                        <small class="text-muted">of {{ "%.0f"|format(trip.vehicle.max_load_kg) }} kg max</small>
+                    </div>
+                </div>
+
+                {% if trip.status in ('Completed',) %}
+                <div class="row g-3 mb-0">
+                    <div class="col-sm-4">
+                        <div class="text-muted small text-uppercase">Fuel Used</div>
+                        <strong>{{ "%.1f"|format(trip.fuel_consumed_l) }} L</strong>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="text-muted small text-uppercase">Efficiency</div>
+                        <strong>
+                            {% set eff = trip.fuel_efficiency %}
+                            {% if eff %}<span class="text-success">{{ eff }} km/L</span>
+                            {% else %}<span class="text-muted">N/A</span>{% endif %}
+                        </strong>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="text-muted small text-uppercase">Odometer</div>
+                        <strong>{{ "%.0f"|format(trip.vehicle.odometer) }} km</strong>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-transparent fw-semibold">
+                <i class="bi bi-arrow-repeat"></i> Status Timeline
+            </div>
+            <div class="card-body pt-3 pb-4">
+                <div class="trip-timeline">
+                    {% set stages = [
+                        ('Draft', 'Created', 'bi-file-text', 'created_at'),
+                        ('Dispatched', 'Dispatched', 'bi-send-fill', 'dispatched_at'),
+                        ('Completed', 'Completed', 'bi-check-circle-fill', 'completed_at')
+                    ] %}
+                    {% if trip.status == 'Cancelled' %}
+                    {% set stages = stages + [('Cancelled', 'Cancelled', 'bi-x-circle-fill', None)] %}
+                    {% endif %}
+
+                    {% for status_key, label, icon, time_field in stages %}
+                    {% set is_active = (trip.status == status_key) %}
+                    {% set is_past = false %}
+                    {% if trip.status == 'Dispatched' and status_key == 'Draft' %}{% set is_past = true %}{% endif %}
+                    {% if trip.status == 'Completed' and status_key in ('Draft', 'Dispatched') %}{% set is_past = true %}{% endif %}
+                    {% if trip.status == 'Cancelled' and status_key in ('Draft', 'Dispatched') %}{% set is_past = true %}{% endif %}
+
+                    <div class="timeline-step
+                        {{ 'timeline-active' if is_active else '' }}
+                        {{ 'timeline-past' if is_past else '' }}
+                        {{ 'timeline-cancelled' if status_key == 'Cancelled' else '' }}">
+                        <div class="timeline-dot">
+                            <i class="bi {{ icon }}"></i>
+                        </div>
+                        <div class="timeline-label">{{ label }}</div>
+                        {% if time_field and trip[time_field] %}
+                        <div class="timeline-time">
+                            {{ trip[time_field].strftime('%d %b %Y') }}<br>
+                            <span class="text-muted">{{ trip[time_field].strftime('%I:%M %p') }}</span>
+                        </div>
+                        {% elif status_key == trip.status and not time_field %}
+                        <div class="timeline-time text-muted">Pending</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-transparent fw-semibold">Actions</div>
+            <div class="card-body">
+                {% if trip.status == 'Draft' %}
+                <form method="POST" action="{{ url_for('trips.dispatch_trip', trip_id=trip.id) }}" class="mb-2">
+                    <button type="submit" class="btn btn-primary w-100"
+                            onclick="return confirm('Dispatch this trip? Vehicle and driver will be marked On Trip.')">
+                        <i class="bi bi-send-fill"></i> Dispatch Trip
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('trips.cancel_trip', trip_id=trip.id) }}">
+                    <button type="submit" class="btn btn-outline-danger w-100"
+                            onclick="return confirm('Cancel this trip?')">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                </form>
+                {% elif trip.status == 'Dispatched' %}
+                <div class="card bg-light-subtle border mb-3">
+                    <div class="card-body p-3">
+                        <h6 class="fw-semibold mb-3">Complete Trip</h6>
+                        <form method="POST" action="{{ url_for('trips.complete_trip', trip_id=trip.id) }}">
+                            <div class="mb-2">
+                                <label class="form-label small">Actual Distance (km)</label>
+                                <input type="number" class="form-control form-control-sm"
+                                       name="actual_distance_km" step="0.1" required
+                                       placeholder="{{ trip.planned_distance_km }}">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Fuel Consumed (L)</label>
+                                <input type="number" class="form-control form-control-sm"
+                                       name="fuel_consumed_l" step="0.1" required
+                                       placeholder="e.g. 15">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Odometer Reading</label>
+                                <input type="number" class="form-control form-control-sm"
+                                       name="odometer_reading" step="0.1"
+                                       placeholder="Current: {{ '%.0f'|format(trip.vehicle.odometer) }}">
+                            </div>
+                            <button type="submit" class="btn btn-success w-100"
+                                    onclick="return confirm('Complete this trip?')">
+                                <i class="bi bi-check-circle-fill"></i> Complete Trip
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <form method="POST" action="{{ url_for('trips.cancel_trip', trip_id=trip.id) }}">
+                    <button type="submit" class="btn btn-outline-danger w-100"
+                            onclick="return confirm('Cancel this trip? Vehicle and driver will be restored to Available.')">
+                        <i class="bi bi-x-circle"></i> Cancel Trip
+                    </button>
+                </form>
+                {% else %}
+                <div class="text-center text-muted py-3">
+                    <i class="bi bi-check-all fs-3 d-block mb-2"></i>
+                    <small>No actions available</small>
+                </div>
+                {% if trip.status == 'Completed' %}
+                <a href="{{ url_for('trips.trip_receipt', trip_id=trip.id) }}" class="btn btn-outline-primary w-100 mt-2" target="_blank">
+                    <i class="bi bi-receipt"></i> View Receipt
+                </a>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent fw-semibold">
+                <i class="bi bi-info-circle"></i> Legend
+            </div>
+            <div class="card-body small">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-secondary">Draft</span> Pending dispatch
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-primary">Dispatched</span> Vehicle & driver on trip
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-success">Completed</span> Trip finished
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-danger">Cancelled</span> Resources restored
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

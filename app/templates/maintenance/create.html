@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}New Maintenance — TransitOps{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('maintenance.list_maintenance') }}">Maintenance</a></li>
+<li class="breadcrumb-item active">New</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-wrench text-primary"></i> Create Maintenance Record</h5>
+                <small class="text-muted">Adding maintenance will switch the vehicle status to "In Shop".</small>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="vehicle_id" class="form-label">Vehicle <span class="text-danger">*</span></label>
+                        <select class="form-select" id="vehicle_id" name="vehicle_id" required>
+                            <option value="">Select vehicle...</option>
+                            {% for v in vehicles %}
+                            <option value="{{ v.id }}">
+                                {{ v.reg_number }} — {{ v.model_name }}
+                                ({{ v.status }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if not vehicles %}
+                        <small class="text-warning">No vehicles available for maintenance scheduling.</small>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  placeholder="e.g. Oil change, brake pad replacement, engine tune-up..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cost" class="form-label">Estimated Cost (₹)</label>
+                        <input type="number" class="form-control" id="cost" name="cost"
+                               value="0" step="0.01" min="0">
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Create & Send to Shop
+                        </button>
+                        <a href="{{ url_for('maintenance.list_maintenance') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
