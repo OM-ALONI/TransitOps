@@ -53,7 +53,7 @@ trips, maintenance, fuel, expenses, and analytics.
 | Feature | Description |
 |---------|-------------|
 | RBAC | 4 roles — Fleet Manager, Driver, Safety Officer, Financial Analyst |
-| Vehicle Registry | 10 Indian vehicles (Tata, Mahindra, Ashok Leyland, Eicher) with unique registration plates |
+| Vehicle Registry | 10 vehicles (Tata, Mahindra, Ashok Leyland, Eicher) with unique registration plates |
 | Driver Management | License expiry alerts, safety scores (0-100), auto-block on expired/suspended |
 | Trip Lifecycle | Draft → Dispatched → Completed / Cancelled with automatic status transitions |
 | Business Rules | Cargo validation, no double-booking, expired license block, load capacity check |
